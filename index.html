@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a2332">
+<title>Punch Register</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;background:#1a2332;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#f0f0f0;overflow:hidden}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:#1a2332}
+.screen.active{display:flex}
+.hd{background:#111c2b;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #2a3a4a}
+.hd h1{font-size:15px;font-weight:600;color:#e0e0e0}
+.hd .sub{font-size:10px;color:#5a7a9a;margin-top:2px}
+.back-btn{width:32px;height:32px;border-radius:8px;border:1px solid #2a3a4a;background:transparent;color:#7a9ab8;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+
+/* HOME */
+.home-top{background:#111c2b;padding:20px 16px 16px;flex-shrink:0}
+.home-top h1{font-size:22px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.home-top p{font-size:12px;color:#5a7a9a;margin-top:4px}
+.doc-input-wrap{background:#0f1922;border:1px solid #2a3a4a;border-radius:10px;padding:12px 14px;margin-top:14px}
+.doc-input-wrap label{font-size:10px;color:#5a7a9a;font-weight:500;letter-spacing:.05em;text-transform:uppercase}
+.doc-input-wrap input{width:100%;background:transparent;border:none;outline:none;font-size:16px;color:#fff;padding:6px 0 2px;font-weight:500}
+.doc-input-wrap input::placeholder{color:#2a3a4a}
+.type-select{display:flex;gap:8px;margin-top:16px}
+.type-btn{flex:1;padding:12px 6px;border-radius:10px;border:2px solid #2a3a4a;background:#111c2b;cursor:pointer;text-align:center;transition:all .15s}
+.type-btn .type-dot{width:10px;height:10px;border-radius:50%;margin:0 auto 6px;background:#2a3a4a}
+.type-btn .type-label{font-size:11px;font-weight:600;color:#3a5a7a}
+.type-btn.sel-vendor{border-color:#378ADD;background:#0d1f35}
+.type-btn.sel-vendor .type-dot{background:#378ADD}
+.type-btn.sel-vendor .type-label{color:#378ADD}
+.type-btn.sel-ri{border-color:#8E44AD;background:#1a0d2b}
+.type-btn.sel-ri .type-dot{background:#8E44AD}
+.type-btn.sel-ri .type-label{color:#8E44AD}
+.type-btn.sel-yard{border-color:#27AE60;background:#0d2018}
+.type-btn.sel-yard .type-dot{background:#27AE60}
+.type-btn.sel-yard .type-label{color:#27AE60}
+.home-body{flex:1;overflow-y:auto;padding:16px}
+.register-btn{width:100%;padding:18px;border-radius:14px;border:none;background:linear-gradient(135deg,#378ADD,#185FA5);color:#fff;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+.register-btn:active{opacity:.85}
+.punch-list-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.punch-list-hd h2{font-size:12px;font-weight:600;color:#5a7a9a;text-transform:uppercase;letter-spacing:.05em}
+.punch-list-hd .count{font-size:11px;color:#378ADD;font-weight:600}
+.punch-item{background:#111c2b;border:1px solid #2a3a4a;border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.punch-item:active{background:#0f1922}
+.punch-no{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;color:#fff}
+.pno-v{background:#185FA5}.pno-r{background:#6C3483}.pno-y{background:#1E8449}
+.punch-item-body{flex:1;min-width:0}
+.punch-item-no{font-size:10px;color:#5a7a9a;margin-bottom:2px}
+.punch-item-desc{font-size:13px;color:#e0e0e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.punch-item-tag{font-size:10px;color:#5a7a9a;margin-top:3px}
+.punch-item-thumb{width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.thumb-placeholder{width:44px;height:44px;border-radius:6px;background:#1e2d3d;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;color:#2a3a4a}
+.home-bottom{background:#111c2b;padding:12px 16px;border-top:1px solid #2a3a4a;flex-shrink:0;display:flex;gap:8px}
+.action-btn{flex:1;padding:12px;border-radius:10px;border:1px solid #2a3a4a;background:#0f1922;color:#7a9ab8;font-size:12px;font-weight:500;cursor:pointer;text-align:center}
+.action-btn.primary{background:#185FA5;border-color:#378ADD;color:#fff}
+.action-btn:active{opacity:.8}
+
+/* 저장 용량 표시 */
+.storage-bar{background:#0f1922;border-radius:6px;height:4px;margin-top:10px;overflow:hidden}
+.storage-fill{height:100%;background:#378ADD;border-radius:6px;transition:width .3s}
+.storage-label{font-size:9px;color:#3a5a7a;margin-top:4px;text-align:right}
+
+/* CAMERA */
+#screen-camera{background:#000}
+#video-preview{width:100%;height:100%;object-fit:cover}
+.camera-overlay{position:absolute;inset:0;pointer-events:none}
+.camera-top{position:absolute;top:0;left:0;right:0;background:linear-gradient(#000a,transparent);padding:16px;pointer-events:all}
+.camera-bottom{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000c);padding:24px 16px 36px;display:flex;align-items:center;justify-content:center;gap:24px;pointer-events:all}
+.shutter-btn{width:72px;height:72px;border-radius:50%;border:4px solid #fff;background:rgba(255,255,255,.2);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.shutter-btn:active{background:rgba(255,255,255,.5);transform:scale(.95)}
+.cam-side-btn{width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,.4);background:rgba(0,0,0,.3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff}
+#canvas-hidden{display:none}
+
+/* PREVIEW */
+#screen-preview{background:#000}
+#captured-img{width:100%;height:100%;object-fit:contain}
+.preview-bottom{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000d);padding:24px 20px 36px;display:flex;gap:12px}
+.preview-btn{flex:1;padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer}
+.preview-retake{background:rgba(255,255,255,.15);color:#fff}
+.preview-ok{background:#378ADD;color:#fff}
+.photo-size-info{position:absolute;top:16px;right:16px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:4px 8px;border-radius:6px}
+
+/* INPUT */
+#screen-input{background:#1a2332}
+.input-body{flex:1;overflow-y:auto;padding:16px}
+.field-wrap{background:#111c2b;border:1px solid #2a3a4a;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.field-wrap label{font-size:10px;color:#5a7a9a;font-weight:500;letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:6px}
+.field-wrap textarea,.field-wrap input{width:100%;background:transparent;border:none;outline:none;font-size:15px;color:#fff;resize:none;font-family:inherit}
+.field-wrap textarea{min-height:72px;line-height:1.5}
+.field-wrap input::placeholder,.field-wrap textarea::placeholder{color:#2a4055}
+.field-row{display:flex;gap:8px}
+.field-row .field-wrap{flex:1}
+.mic-row{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.mic-btn{padding:6px 12px;border-radius:20px;border:1px solid #2a3a4a;background:#0f1922;color:#7a9ab8;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px}
+.mic-btn.listening{border-color:#E24B4A;background:#2a0f0f;color:#E24B4A;animation:pulse-mic .8s infinite}
+@keyframes pulse-mic{0%,100%{opacity:1}50%{opacity:.6}}
+.copy-row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.cpb{padding:4px 10px;border-radius:6px;border:1px solid #2a3a4a;background:#0f1922;color:#5a7a9a;font-size:10px;cursor:pointer}
+.cpb:active{background:#1a2d3d;color:#7a9ab8}
+.photo-thumb-row{display:flex;gap:8px;margin-bottom:10px}
+.photo-thumb-wrap{position:relative;width:72px;height:72px}
+.photo-thumb-wrap img{width:72px;height:72px;border-radius:8px;object-fit:cover;border:1px solid #2a3a4a}
+.photo-del-btn{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#E24B4A;border:none;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.repeat-box{background:#0f1922;border:1px dashed #2a3a4a;border-radius:10px;padding:12px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.save-bar{background:#111c2b;padding:14px 16px;border-top:1px solid #2a3a4a;flex-shrink:0}
+.save-btn{width:100%;padding:15px;border-radius:12px;border:none;background:linear-gradient(135deg,#27AE60,#1E8449);color:#fff;font-size:16px;font-weight:600;cursor:pointer}
+.save-btn:active{opacity:.85}
+.sel-native{background:transparent;border:none;outline:none;color:#fff;font-size:14px;width:100%;padding:2px 0}
+.sel-native option{background:#111c2b}
+
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.9);color:#fff;font-size:12px;padding:8px 16px;border-radius:20px;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+#toast.show{opacity:1}
+
+/* 로딩 오버레이 */
+#loading{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+#loading.show{display:flex}
+#loading p{color:#fff;font-size:13px}
+.spinner{width:36px;height:36px;border:3px solid #2a3a4a;border-top-color:#378ADD;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="home-top">
+    <h1>Punch Register</h1>
+    <p>Field Inspection App</p>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <div class="doc-input-wrap" style="flex:1;margin-top:0">
+        <label>Document No.</label>
+        <input type="text" id="doc-no" placeholder="e.g. CPPR1-QC-2026-001" autocomplete="off">
+      </div>
+      <div class="doc-input-wrap" style="width:90px;margin-top:0">
+        <label>장비코드</label>
+        <input type="text" id="equip-code" placeholder="R59" maxlength="5"
+          style="text-transform:uppercase;font-size:18px;font-weight:700;color:#378ADD;letter-spacing:1px">
+      </div>
+    </div>
+    <div class="type-select" id="type-select">
+      <div class="type-btn sel-vendor" data-type="Vendor punch" onclick="selectType(this)">
+        <div class="type-dot"></div><div class="type-label">Vendor</div>
+      </div>
+      <div class="type-btn" data-type="RI punch" onclick="selectType(this)">
+        <div class="type-dot"></div><div class="type-label">RI</div>
+      </div>
+      <div class="type-btn" data-type="Yard punch" onclick="selectType(this)">
+        <div class="type-dot"></div><div class="type-label">Yard</div>
+      </div>
+    </div>
+    <!-- 저장 용량 표시 -->
+    <div style="margin-top:10px">
+      <div class="storage-bar"><div class="storage-fill" id="storage-fill" style="width:0%"></div></div>
+      <div class="storage-label" id="storage-label">IndexedDB storage</div>
+    </div>
+  </div>
+  <div class="home-body">
+    <button class="register-btn" onclick="startRegister()">
+      <span style="font-size:22px">📷</span> New Punch
+    </button>
+    <div class="punch-list-hd">
+      <h2>Registered</h2>
+      <span class="count" id="punch-count">0 punches</span>
+    </div>
+    <div id="punch-list-el"></div>
+  </div>
+  <div class="home-bottom">
+    <button class="action-btn" onclick="clearCurrentType()">🗑 Clear</button>
+    <button class="action-btn primary" onclick="exportRegister()">📥 레지스터 내보내기</button>
+  </div>
+</div>
+
+<!-- CAMERA -->
+<div class="screen" id="screen-camera">
+  <video id="video-preview" autoplay playsinline muted></video>
+  <canvas id="canvas-hidden"></canvas>
+  <div class="camera-overlay">
+    <div class="camera-top">
+      <button class="back-btn" onclick="stopCamera();goScreen('home')">✕</button>
+    </div>
+    <div class="camera-bottom">
+      <button class="cam-side-btn" onclick="switchCamera()">🔄</button>
+      <button class="shutter-btn" onclick="takePicture()">
+        <div style="width:54px;height:54px;border-radius:50%;background:#fff"></div>
+      </button>
+      <button class="cam-side-btn" onclick="skipPhoto()">⏭</button>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW -->
+<div class="screen" id="screen-preview">
+  <img id="captured-img" src="">
+  <div class="photo-size-info" id="photo-size-info"></div>
+  <div class="preview-bottom">
+    <button class="preview-btn preview-retake" onclick="retakePhoto()">↩ Retake</button>
+    <button class="preview-btn preview-ok" onclick="usePhoto()">Use Photo →</button>
+  </div>
+</div>
+
+<!-- INPUT -->
+<div class="screen" id="screen-input">
+  <div class="hd">
+    <button class="back-btn" onclick="goScreen('home')">←</button>
+    <div>
+      <h1 id="input-title">New Punch</h1>
+      <div class="sub" id="input-sub"></div>
+    </div>
+  </div>
+  <div class="input-body">
+    <div class="photo-thumb-row" id="photo-thumb-row" style="display:none">
+      <div class="photo-thumb-wrap">
+        <img id="photo-thumb" src="">
+        <button class="photo-del-btn" onclick="removePhoto()">×</button>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding-left:8px">
+        <div style="font-size:11px;color:#5a7a9a" id="photo-size-label"></div>
+        <div style="font-size:10px;color:#3a5a7a;margin-top:2px">JPEG compressed</div>
+      </div>
+    </div>
+
+    <div class="field-wrap" style="background:#0d1f35;border-color:#378ADD">
+      <label style="color:#378ADD">Equipment Code (장비코드)</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="text" id="f-code" placeholder="R59" maxlength="5"
+          style="font-size:20px;font-weight:700;color:#378ADD;letter-spacing:2px;text-transform:uppercase;width:80px">
+        <span style="color:#3a5a7a;font-size:10px">펀치리스트 파일명 앞에 [코드] 형식으로 사용됩니다</span>
+      </div>
+      <div class="copy-row">
+        <button class="cpb" onclick="copyPrev('f-code')" style="border-color:#378ADD;color:#378ADD">📋 prev</button>
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <label>Punch Description *</label>
+      <textarea id="f-desc" placeholder="Describe the punch item..."></textarea>
+      <div class="mic-row">
+        <button class="mic-btn" id="mic-desc" onclick="startVoice('f-desc','mic-desc')">🎤 Voice (EN)</button>
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <label>Tag No. (Equipment)</label>
+      <input type="text" id="f-tag" placeholder="e.g. ASBJA-A-3901">
+      <div class="copy-row">
+        <button class="cpb" onclick="copyPrev('f-tag')">📋 prev</button>
+        <button class="mic-btn" id="mic-tag" onclick="startVoice('f-tag','mic-tag')" style="padding:4px 10px;font-size:10px">🎤</button>
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <label>Drawing No.</label>
+      <input type="text" id="f-dwg" placeholder="Drawing number">
+      <div class="copy-row"><button class="cpb" onclick="copyPrev('f-dwg')">📋 prev</button></div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-wrap">
+        <label>Category</label>
+        <select id="f-cat" class="sel-native">
+          <option value="">—</option><option value="A">A</option><option value="B">B</option><option value="C">C</option>
+        </select>
+        <div class="copy-row"><button class="cpb" onclick="copyPrev('f-cat')">📋</button></div>
+      </div>
+      <div class="field-wrap">
+        <label>Discipline</label>
+        <input type="text" id="f-disc" placeholder="e.g. Piping">
+        <div class="copy-row"><button class="cpb" onclick="copyPrev('f-disc')">📋</button></div>
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <label>Corrective Action</label>
+      <textarea id="f-action" placeholder="Proposed corrective action..." style="min-height:52px"></textarea>
+      <div class="mic-row">
+        <button class="mic-btn" id="mic-action" onclick="startVoice('f-action','mic-action')">🎤 Voice (EN)</button>
+        <button class="cpb" onclick="copyPrev('f-action')">📋 prev</button>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-wrap">
+        <label>Material Req.</label>
+        <select id="f-mat" class="sel-native">
+          <option value="">—</option><option value="Y">Y</option><option value="N">N</option>
+        </select>
+        <div class="copy-row"><button class="cpb" onclick="copyPrev('f-mat')">📋</button></div>
+      </div>
+      <div class="field-wrap">
+        <label>Eng./Physical</label>
+        <select id="f-engphy" class="sel-native">
+          <option value="">—</option>
+          <option value="Engineering">Engineering</option>
+          <option value="Physical work">Physical work</option>
+        </select>
+        <div class="copy-row"><button class="cpb" onclick="copyPrev('f-engphy')">📋</button></div>
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <label>Issue Date</label>
+      <input type="date" id="f-date" style="color:#fff;background:transparent;border:none;outline:none;font-size:15px;width:100%;padding:2px 0">
+      <div class="copy-row"><button class="cpb" onclick="copyPrev('f-date')">📋 prev</button></div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-wrap">
+        <label>Raised By</label>
+        <input type="text" id="f-by" placeholder="Name">
+        <div class="copy-row"><button class="cpb" onclick="copyPrev('f-by')">📋</button></div>
+      </div>
+      <div class="field-wrap">
+        <label>Raised Entity</label>
+        <input type="text" id="f-entity" placeholder="Company">
+        <div class="copy-row"><button class="cpb" onclick="copyPrev('f-entity')">📋</button></div>
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <label>Remarks</label>
+      <input type="text" id="f-remarks" placeholder="Optional notes">
+      <div class="copy-row"><button class="cpb" onclick="copyPrev('f-remarks')">📋 prev</button></div>
+    </div>
+
+    <!-- REPEAT -->
+    <div class="repeat-box">
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:600;color:#5a7a9a">REPEAT ALL FIELDS</div>
+        <div style="font-size:10px;color:#3a5a7a;margin-top:2px">Copy all fields from previous punch<br>Say <b style="color:#7a9ab8">"repeat"</b> via voice or tap button</div>
+      </div>
+      <button onclick="repeatAll()" style="padding:10px 16px;border-radius:8px;border:1px solid #378ADD;background:#0d1f35;color:#378ADD;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0">REPEAT</button>
+    </div>
+  </div>
+  <div class="save-bar">
+    <button class="save-btn" onclick="savePunch()">✓ Save Punch</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="loading"><div class="spinner"></div><p id="loading-msg">Processing...</p></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  IndexedDB 초기화
+// ═══════════════════════════════════════════════════════════════
+const DB_NAME    = 'PunchRegisterDB';
+const DB_VERSION = 1;
+const STORE_META = 'punches';   // 텍스트 데이터 (photo 제외)
+const STORE_PHOTO= 'photos';    // 사진 Blob (punch_id → Blob)
+let db = null;
+
+function initDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE_META)) {
+        d.createObjectStore(STORE_META, { keyPath: 'uid' });
+      }
+      if (!d.objectStoreNames.contains(STORE_PHOTO)) {
+        d.createObjectStore(STORE_PHOTO); // key: uid
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; res(db); };
+    req.onerror   = e => rej(e.target.error);
+  });
+}
+
+function dbPut(store, value, key) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readwrite');
+    const req = key !== undefined ? tx.objectStore(store).put(value, key)
+                                  : tx.objectStore(store).put(value);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = e  => rej(e.target.error);
+  });
+}
+
+function dbGet(store, key) {
+  return new Promise((res, rej) => {
+    const tx  = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).get(key);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = e  => rej(e.target.error);
+  });
+}
+
+function dbGetAll(store) {
+  return new Promise((res, rej) => {
+    const tx  = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror   = e  => rej(e.target.error);
+  });
+}
+
+function dbDelete(store, key) {
+  return new Promise((res, rej) => {
+    const tx  = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).delete(key);
+    req.onsuccess = () => res();
+    req.onerror   = e  => rej(e.target.error);
+  });
+}
+
+function dbClear(store) {
+  return new Promise((res, rej) => {
+    const tx  = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).clear();
+    req.onsuccess = () => res();
+    req.onerror   = e  => rej(e.target.error);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  상태
+// ═══════════════════════════════════════════════════════════════
+let punches     = [];  // 메타데이터 배열 (photo 없음)
+let currentType = 'Vendor punch';
+let currentPhotoBlob = null;   // 촬영된 사진 Blob
+let currentPhotoUrl  = null;   // 미리보기용 ObjectURL
+let editUid     = null;        // 편집 중인 uid (null=신규)
+let stream      = null;
+let facingMode  = 'environment';
+let recognition = null;
+
+// UID 생성
+function genUid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  화면 전환
+// ═══════════════════════════════════════════════════════════════
+function goScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  if (id === 'home') { renderList(); updateStorageInfo(); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  타입 선택
+// ═══════════════════════════════════════════════════════════════
+function selectType(el) {
+  document.querySelectorAll('.type-btn').forEach(b => {
+    b.className = 'type-btn';
+    b.querySelector('.type-dot').style.background = '#2a3a4a';
+    b.querySelector('.type-label').style.color = '#3a5a7a';
+  });
+  currentType = el.dataset.type;
+  const cls = {'Vendor punch':'sel-vendor','RI punch':'sel-ri','Yard punch':'sel-yard'};
+  el.classList.add(cls[currentType]);
+  renderList();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  목록 렌더
+// ═══════════════════════════════════════════════════════════════
+async function renderList() {
+  const el   = document.getElementById('punch-list-el');
+  const list = punches.filter(p => p.punch_type === currentType)
+                      .slice().sort((a,b) => parseInt(a.punch_no)-parseInt(b.punch_no));
+  document.getElementById('punch-count').textContent =
+    list.length + ' punch' + (list.length !== 1 ? 'es' : '');
+
+  if (!list.length) {
+    el.innerHTML = '<div style="text-align:center;padding:32px;color:#3a5a7a;font-size:13px">No punches registered yet</div>';
+    return;
+  }
+
+  const cls = {'Vendor punch':'pno-v','RI punch':'pno-r','Yard punch':'pno-y'};
+  const html = await Promise.all(list.slice().reverse().map(async p => {
+    // 사진 썸네일: IndexedDB에서 Blob 꺼내서 ObjectURL 생성
+    let thumbHtml = `<div class="thumb-placeholder">📋</div>`;
+    if (p.has_photo) {
+      try {
+        const blob = await dbGet(STORE_PHOTO, p.uid);
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          thumbHtml = `<img class="punch-item-thumb" src="${url}" loading="lazy">`;
+        }
+      } catch(e) {}
+    }
+    const c = cls[p.punch_type] || 'pno-v';
+    return `<div class="punch-item" onclick="editPunch('${p.uid}')">
+      <div class="punch-no ${c}">${p.punch_no}</div>
+      <div class="punch-item-body">
+        <div class="punch-item-no">${p.equip_code?'['+p.equip_code+'] ':''} ${p.punch_type} · ${p.punch_issue_date||'—'}</div>
+        <div class="punch-item-desc">${p.punch_description||'(no description)'}</div>
+        <div class="punch-item-tag">${p.equipment_no||''}</div>
+      </div>
+      ${thumbHtml}
+    </div>`;
+  }));
+  el.innerHTML = html.join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  저장 용량 표시
+// ═══════════════════════════════════════════════════════════════
+async function updateStorageInfo() {
+  try {
+    if (navigator.storage && navigator.storage.estimate) {
+      const { usage, quota } = await navigator.storage.estimate();
+      const pct = Math.round(usage / quota * 100);
+      const usedMB = (usage / 1024 / 1024).toFixed(1);
+      const quotaMB = (quota / 1024 / 1024).toFixed(0);
+      document.getElementById('storage-fill').style.width = pct + '%';
+      document.getElementById('storage-label').textContent =
+        `${usedMB} MB used / ~${quotaMB} MB available`;
+    }
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  카메라
+// ═══════════════════════════════════════════════════════════════
+async function startRegister() {
+  currentPhotoBlob = null;
+  currentPhotoUrl  = null;
+  editUid = null;
+  clearForm();
+  await startCamera();
+}
+
+async function startCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode, width:{ideal:3840}, height:{ideal:2160} },
+      audio: false
+    });
+    document.getElementById('video-preview').srcObject = stream;
+    goScreen('camera');
+  } catch(e) {
+    showToast('Camera unavailable — skipping photo');
+    goScreen('input');
+    setInputTitle();
+  }
+}
+
+function stopCamera() {
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+}
+
+async function switchCamera() {
+  facingMode = facingMode === 'environment' ? 'user' : 'environment';
+  stopCamera();
+  await startCamera();
+}
+
+function takePicture() {
+  const video  = document.getElementById('video-preview');
+  const canvas = document.getElementById('canvas-hidden');
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+
+  showLoading('Compressing photo...');
+  compressToLimit(canvas, 500 * 1024, (blob, dataUrl) => {
+    hideLoading();
+    currentPhotoBlob = blob;
+    if (currentPhotoUrl) URL.revokeObjectURL(currentPhotoUrl);
+    currentPhotoUrl = URL.createObjectURL(blob);
+    document.getElementById('captured-img').src = currentPhotoUrl;
+    document.getElementById('photo-size-info').textContent =
+      (blob.size / 1024).toFixed(0) + ' KB';
+    stopCamera();
+    goScreen('preview');
+  });
+}
+
+function compressToLimit(canvas, maxBytes, callback) {
+  let quality = 0.92;
+  const tryCompress = () => {
+    canvas.toBlob(blob => {
+      if (!blob) { callback(null, ''); return; }
+      if (blob.size <= maxBytes || quality <= 0.25) {
+        const reader = new FileReader();
+        reader.onload = () => callback(blob, reader.result);
+        reader.readAsDataURL(blob);
+      } else {
+        quality = Math.max(0.25, quality - 0.08);
+        tryCompress();
+      }
+    }, 'image/jpeg', quality);
+  };
+  tryCompress();
+}
+
+function retakePhoto() {
+  currentPhotoBlob = null;
+  if (currentPhotoUrl) { URL.revokeObjectURL(currentPhotoUrl); currentPhotoUrl = null; }
+  startCamera();
+}
+
+function usePhoto() {
+  document.getElementById('photo-thumb').src = currentPhotoUrl;
+  document.getElementById('photo-thumb-row').style.display = 'flex';
+  document.getElementById('photo-size-label').textContent =
+    currentPhotoBlob ? (currentPhotoBlob.size/1024).toFixed(0) + ' KB' : '';
+  stopCamera();
+  goScreen('input');
+  setInputTitle();
+}
+
+function skipPhoto() {
+  stopCamera();
+  currentPhotoBlob = null;
+  if (currentPhotoUrl) { URL.revokeObjectURL(currentPhotoUrl); currentPhotoUrl = null; }
+  document.getElementById('photo-thumb-row').style.display = 'none';
+  goScreen('input');
+  setInputTitle();
+}
+
+function removePhoto() {
+  currentPhotoBlob = null;
+  if (currentPhotoUrl) { URL.revokeObjectURL(currentPhotoUrl); currentPhotoUrl = null; }
+  document.getElementById('photo-thumb-row').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  입력 화면
+// ═══════════════════════════════════════════════════════════════
+function setInputTitle() {
+  const no = editUid
+    ? punches.find(p => p.uid === editUid)?.punch_no || '?'
+    : getNextNo();
+  document.getElementById('input-title').textContent =
+    editUid ? `Edit No.${no}` : `Punch No.${no}`;
+  document.getElementById('input-sub').textContent = currentType;
+}
+
+function getNextNo() {
+  const same = punches.filter(p => p.punch_type === currentType);
+  if (!same.length) return 1;
+  return Math.max(...same.map(p => parseInt(p.punch_no)||0)) + 1;
+}
+
+function clearForm() {
+  ['f-desc','f-tag','f-dwg','f-disc','f-action','f-remarks','f-by','f-entity','f-code']
+    .forEach(id => document.getElementById(id).value = '');
+  // 장비코드는 홈화면 값 유지
+  const homeCode = (document.getElementById('equip-code')||{}).value || '';
+  if (homeCode) document.getElementById('f-code').value = homeCode.toUpperCase();
+  ['f-cat','f-mat','f-engphy'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+}
+
+async function editPunch(uid) {
+  editUid = uid;
+  const p = punches.find(x => x.uid === uid);
+  if (!p) return;
+  currentType = p.punch_type;
+
+  // 사진 복원
+  currentPhotoBlob = null;
+  if (currentPhotoUrl) { URL.revokeObjectURL(currentPhotoUrl); currentPhotoUrl = null; }
+  if (p.has_photo) {
+    try {
+      const blob = await dbGet(STORE_PHOTO, uid);
+      if (blob) {
+        currentPhotoBlob = blob;
+        currentPhotoUrl  = URL.createObjectURL(blob);
+        document.getElementById('photo-thumb').src = currentPhotoUrl;
+        document.getElementById('photo-size-label').textContent =
+          (blob.size/1024).toFixed(0) + ' KB';
+        document.getElementById('photo-thumb-row').style.display = 'flex';
+      }
+    } catch(e) {}
+  } else {
+    document.getElementById('photo-thumb-row').style.display = 'none';
+  }
+
+  document.getElementById('f-code').value    = p.equip_code || '';
+  document.getElementById('f-desc').value    = p.punch_description || '';
+  document.getElementById('f-tag').value     = p.equipment_no || '';
+  document.getElementById('f-dwg').value     = p.drawing_no || '';
+  document.getElementById('f-cat').value     = p.punch_category || '';
+  document.getElementById('f-disc').value    = p.discipline || '';
+  document.getElementById('f-action').value  = p.proposed_corrective_action || '';
+  document.getElementById('f-mat').value     = p.material_required || '';
+  document.getElementById('f-engphy').value  = p.eng_physical || '';
+  document.getElementById('f-date').value    = p.punch_issue_date || '';
+  document.getElementById('f-by').value      = p.punch_raised_by || '';
+  document.getElementById('f-entity').value  = p.punch_raised_entity || '';
+  document.getElementById('f-remarks').value = p.remarks || '';
+
+  setInputTitle();
+  goScreen('input');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  이전 값 복사
+// ═══════════════════════════════════════════════════════════════
+function getPrevPunch() {
+  const same = punches.filter(p => p.punch_type === currentType)
+                      .sort((a,b) => parseInt(a.punch_no)-parseInt(b.punch_no));
+  if (editUid) {
+    const cur = same.find(p => p.uid === editUid);
+    const curNo = cur ? parseInt(cur.punch_no) : 0;
+    const prev = same.filter(p => parseInt(p.punch_no) < curNo);
+    return prev.length ? prev[prev.length-1] : null;
+  }
+  return same.length ? same[same.length-1] : null;
+}
+
+const FIELD_MAP = {
+  'f-code':   'equip_code',
+  'f-tag':    'equipment_no',
+  'f-dwg':    'drawing_no',
+  'f-cat':    'punch_category',
+  'f-disc':   'discipline',
+  'f-action': 'proposed_corrective_action',
+  'f-mat':    'material_required',
+  'f-engphy': 'eng_physical',
+  'f-date':   'punch_issue_date',
+  'f-by':     'punch_raised_by',
+  'f-entity': 'punch_raised_entity',
+  'f-remarks':'remarks',
+};
+
+function copyPrev(fieldId) {
+  const prev = getPrevPunch();
+  if (!prev) { showToast('No previous punch'); return; }
+  const key = FIELD_MAP[fieldId];
+  const val = key && prev[key];
+  if (val) {
+    document.getElementById(fieldId).value = val;
+    showToast('✓ Copied from No.' + prev.punch_no);
+  } else {
+    showToast('No value in previous punch');
+  }
+}
+
+function repeatAll() {
+  const prev = getPrevPunch();
+  if (!prev) { showToast('No previous punch to repeat'); return; }
+  Object.keys(FIELD_MAP).forEach(id => {
+    const key = FIELD_MAP[id];
+    if (prev[key]) document.getElementById(id).value = prev[key];
+  });
+  showToast('✓ All fields copied from No.' + prev.punch_no);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  음성 입력 (영문 only)
+// ═══════════════════════════════════════════════════════════════
+function startVoice(targetId, btnId) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('Voice input not supported'); return; }
+  if (recognition) { recognition.stop(); recognition = null; }
+
+  recognition = new SR();
+  recognition.lang = 'en-US';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  const btn = document.getElementById(btnId);
+  const origText = btn.textContent;
+  btn.classList.add('listening');
+  btn.textContent = '🔴 Listening...';
+
+  recognition.onresult = e => {
+    const text = e.results[0][0].transcript.trim();
+    if (text.toLowerCase() === 'repeat') {
+      repeatAll();
+    } else {
+      const el = document.getElementById(targetId);
+      el.value = (el.value ? el.value + ' ' : '') + text;
+    }
+  };
+  recognition.onend = () => {
+    btn.classList.remove('listening');
+    btn.textContent = origText;
+    recognition = null;
+  };
+  recognition.onerror = () => {
+    btn.classList.remove('listening');
+    btn.textContent = origText;
+    showToast('Voice input failed');
+    recognition = null;
+  };
+  recognition.start();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  저장
+// ═══════════════════════════════════════════════════════════════
+async function savePunch() {
+  const desc = document.getElementById('f-desc').value.trim();
+  if (!desc) { showToast('Punch description is required'); return; }
+
+  showLoading('Saving...');
+
+  try {
+    const uid      = editUid || genUid();
+    const punchNo  = editUid
+      ? punches.find(p => p.uid === editUid)?.punch_no || String(getNextNo())
+      : String(getNextNo());
+
+    const meta = {
+      uid,
+      punch_no:                   punchNo,
+      punch_type:                 currentType,
+      equip_code:                 (document.getElementById('f-code').value||'').toUpperCase().trim(),
+      equipment_no:               document.getElementById('f-tag').value.trim(),
+      drawing_no:                 document.getElementById('f-dwg').value.trim(),
+      punch_description:          desc,
+      punch_category:             document.getElementById('f-cat').value,
+      discipline:                 document.getElementById('f-disc').value.trim(),
+      proposed_corrective_action: document.getElementById('f-action').value.trim(),
+      material_required:          document.getElementById('f-mat').value,
+      eng_physical:               document.getElementById('f-engphy').value,
+      punch_issue_date:           document.getElementById('f-date').value,
+      punch_raised_by:            document.getElementById('f-by').value.trim(),
+      punch_raised_entity:        document.getElementById('f-entity').value.trim(),
+      remarks:                    document.getElementById('f-remarks').value.trim(),
+      picture_open:               currentPhotoBlob ? 'Y' : '',
+      picture_closed:             '',
+      punch_closed_date:          '',
+      punch_closed_by:            '',
+      close_plan_date:            '',
+      status:                     'open',
+      has_photo:                  !!currentPhotoBlob,
+      saved_at:                   new Date().toISOString(),
+    };
+
+    // 사진 저장 (Blob → IndexedDB)
+    if (currentPhotoBlob) {
+      await dbPut(STORE_PHOTO, currentPhotoBlob, uid);
+    } else if (!editUid) {
+      // 신규인데 사진 없으면 기존 사진 삭제 방지
+    } else if (!currentPhotoBlob && editUid) {
+      // 편집 중 사진 제거
+      await dbDelete(STORE_PHOTO, uid);
+    }
+
+    // 메타 저장
+    await dbPut(STORE_META, meta);
+
+    // 메모리 반영
+    const idx = punches.findIndex(p => p.uid === uid);
+    if (idx >= 0) punches[idx] = meta;
+    else punches.push(meta);
+
+    hideLoading();
+    showToast('No.' + punchNo + ' saved ✓');
+    goScreen('home');
+  } catch(e) {
+    hideLoading();
+    showToast('Save failed: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  삭제
+// ═══════════════════════════════════════════════════════════════
+async function clearCurrentType() {
+  const same = punches.filter(p => p.punch_type === currentType);
+  if (!same.length) { showToast('No punches to clear'); return; }
+  if (!confirm(`Delete all ${same.length} ${currentType} punches?\nThis cannot be undone.`)) return;
+
+  showLoading('Deleting...');
+  try {
+    for (const p of same) {
+      await dbDelete(STORE_META, p.uid);
+      if (p.has_photo) await dbDelete(STORE_PHOTO, p.uid);
+    }
+    punches = punches.filter(p => p.punch_type !== currentType);
+    hideLoading();
+    renderList();
+    updateStorageInfo();
+    showToast('Cleared');
+  } catch(e) {
+    hideLoading();
+    showToast('Error: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  Excel 내보내기 (SheetJS + 사진 Base64 embed)
+// ═══════════════════════════════════════════════════════════════
+async function exportRegister() {
+  const same = punches.filter(p => p.punch_type === currentType)
+                      .sort((a,b) => parseInt(a.punch_no)-parseInt(b.punch_no));
+  if (!same.length) { showToast('No punches to export'); return; }
+
+  if (typeof XLSX === 'undefined') {
+    showLoading('Loading Excel library...');
+    try {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+    } catch(e) { hideLoading(); showToast('Failed to load Excel library'); return; }
+  }
+
+  const equipCode = (document.getElementById('equip-code').value || '').toUpperCase().trim();
+  const docNo     = document.getElementById('doc-no').value.trim() || 'PunchRegister';
+  const prefix    = equipCode ? '['+equipCode+']_' : '';
+  const typeSuffix= currentType.replace(' ','_');
+  const dateStr   = new Date().toISOString().slice(0,10);
+  const baseName  = `${prefix}${docNo}_${typeSuffix}_${dateStr}`;
+
+  showLoading(`Building register (${same.length} punches + photos)...`);
+
+  try {
+    // ── Excel 생성 ──
+    const headers = [
+      'Punch Type','No.','Tag No.','','',
+      'Drawing No.','Punch Description','Pic (Open)','Pic (Closed)',
+      'Old Cat.','Category','Discipline','Corrective Action',
+      'Material Req.','Eng./Physical','Issue Date','Raised By',
+      'Raised Entity','Close Plan Date','Closed Date','Closed By',
+      'Signature','Remarks','Equip.Code'
+    ];
+
+    const rows = [headers];
+    const photoRows = [['No.','Equip.Code','File Name','Size (KB)']];
+
+    for (const p of same) {
+      const photoFileName = p.has_photo
+        ? `Photo_No${p.punch_no}${p.equip_code?'_'+p.equip_code:''}.jpg`
+        : '';
+
+      rows.push([
+        p.punch_type||'', p.punch_no||'', p.equipment_no||'','','',
+        p.drawing_no||'', p.punch_description||'',
+        photoFileName,           // H열: 사진 파일명
+        p.picture_closed||'', '',
+        p.punch_category||'', p.discipline||'',
+        p.proposed_corrective_action||'', p.material_required||'',
+        p.eng_physical||'', p.punch_issue_date||'',
+        p.punch_raised_by||'', p.punch_raised_entity||'',
+        p.close_plan_date||'', p.punch_closed_date||'',
+        p.punch_closed_by||'', '', p.remarks||'',
+        p.equip_code||''
+      ]);
+
+      if (p.has_photo) {
+        try {
+          const blob = await dbGet(STORE_PHOTO, p.uid);
+          if (blob) photoRows.push([p.punch_no, p.equip_code||'', photoFileName, (blob.size/1024).toFixed(0)]);
+        } catch(e) {}
+      }
+    }
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [
+      {wch:14},{wch:6},{wch:18},{wch:4},{wch:4},{wch:22},{wch:45},
+      {wch:22},{wch:10},{wch:8},{wch:10},{wch:12},{wch:28},
+      {wch:12},{wch:14},{wch:12},{wch:18},{wch:16},
+      {wch:14},{wch:12},{wch:14},{wch:10},{wch:20},{wch:10}
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, currentType.replace(' punch',''));
+
+    // 사진 목록 시트
+    const wsPhoto = XLSX.utils.aoa_to_sheet(photoRows);
+    XLSX.utils.book_append_sheet(wb, wsPhoto, 'Photos');
+
+    // Excel 다운로드
+    XLSX.writeFile(wb, baseName + '.xlsx');
+    showToast('Excel 저장: ' + baseName + '.xlsx');
+
+    // ── 사진 개별 다운로드 ──
+    const withPhotos = same.filter(p => p.has_photo);
+    if (withPhotos.length > 0) {
+      await new Promise(r => setTimeout(r, 800));
+      showLoading(`Downloading ${withPhotos.length} photos...`);
+
+      let downloaded = 0;
+      for (const p of withPhotos) {
+        try {
+          const blob = await dbGet(STORE_PHOTO, p.uid);
+          if (!blob) continue;
+          const url  = URL.createObjectURL(blob);
+          const a    = document.createElement('a');
+          a.href     = url;
+          a.download = `Photo_No${p.punch_no}${p.equip_code?'_'+p.equip_code:''}.jpg`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          downloaded++;
+          // 브라우저 다운로드 간격 (연속 다운로드 차단 방지)
+          await new Promise(r => setTimeout(r, 400));
+        } catch(e) { console.warn('Photo download failed:', e); }
+      }
+      hideLoading();
+      showToast(`✓ Excel 1개 + 사진 ${downloaded}개 내보내기 완료`);
+    } else {
+      hideLoading();
+      showToast(`✓ Excel 내보내기 완료 (사진 없음)`);
+    }
+  } catch(e) {
+    hideLoading();
+    showToast('Export failed: ' + e.message);
+    console.error(e);
+  }
+}
+
+async function exportExcel() { await exportRegister(); }  // 하위 호환
+
+async function downloadPhotos() {
+  const same = punches.filter(p => p.punch_type === currentType)
+                      .sort((a,b) => parseInt(a.punch_no)-parseInt(b.punch_no));
+  if (!same.length) { showToast('No punches to export'); return; }
+
+  if (typeof XLSX === 'undefined') {
+    showLoading('Loading Excel library...');
+    try {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+    } catch(e) {
+      hideLoading(); showToast('Failed to load Excel library'); return;
+    }
+  }
+
+  showLoading(`Building Excel (${same.length} punches)...`);
+
+  try {
+    const docNo = document.getElementById('doc-no').value.trim() || 'PunchRegister';
+    const wb    = XLSX.utils.book_new();
+
+    const headers = [
+      'Punch Type','No.','Tag No.','','',
+      'Drawing No.','Punch Description','Pic (Open)','Pic (Closed)',
+      'Old Cat.','Category','Discipline','Corrective Action',
+      'Material Req.','Eng./Physical','Issue Date','Raised By',
+      'Raised Entity','Close Plan Date','Closed Date','Closed By',
+      'Signature','Remarks'
+    ];
+
+    const rows = [headers];
+    for (const p of same) {
+      rows.push([
+        p.punch_type||'', p.punch_no||'', p.equipment_no||'','','',
+        p.drawing_no||'', p.punch_description||'',
+        p.picture_open||'', p.picture_closed||'', '',
+        p.punch_category||'', p.discipline||'',
+        p.proposed_corrective_action||'', p.material_required||'',
+        p.eng_physical||'', p.punch_issue_date||'',
+        p.punch_raised_by||'', p.punch_raised_entity||'',
+        p.close_plan_date||'', p.punch_closed_date||'',
+        p.punch_closed_by||'', '', p.remarks||''
+      ]);
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [
+      {wch:14},{wch:6},{wch:18},{wch:4},{wch:4},{wch:22},{wch:45},
+      {wch:10},{wch:10},{wch:8},{wch:10},{wch:12},{wch:28},
+      {wch:12},{wch:14},{wch:12},{wch:18},{wch:16},
+      {wch:14},{wch:12},{wch:14},{wch:10},{wch:20}
+    ];
+
+    // 사진 embed — H열에 이미지 추가
+    // SheetJS는 이미지 embed를 직접 지원하지 않으므로
+    // H열에 Base64 data URL 텍스트로 넣고 크기 정보 기록
+    // 실제 이미지는 별도 시트에 목록으로 제공
+    const imgSheet = [['No.','Size (KB)','Note']];
+    for (let i = 0; i < same.length; i++) {
+      const p = same[i];
+      if (p.has_photo) {
+        try {
+          const blob = await dbGet(STORE_PHOTO, p.uid);
+          if (blob) {
+            const sizeKB = (blob.size / 1024).toFixed(0);
+            imgSheet.push([p.punch_no, sizeKB, 'Photo saved in app']);
+            // H열에 photo indicator 업데이트
+            const cellAddr = XLSX.utils.encode_cell({r: i+1, c: 7}); // H열
+            ws[cellAddr] = { v: `Photo_No${p.punch_no}.jpg (${sizeKB}KB)`, t: 's' };
+          }
+        } catch(e) {}
+      }
+    }
+
+    XLSX.utils.book_append_sheet(wb, ws, currentType.replace(' punch',''));
+
+    const wsImg = XLSX.utils.aoa_to_sheet(imgSheet);
+    XLSX.utils.book_append_sheet(wb, wsImg, 'Photos Index');
+
+    const typeSuffix = currentType.replace(' ','_');
+    const filename = `${docNo}_${typeSuffix}_${new Date().toISOString().slice(0,10)}.xlsx`;
+    XLSX.writeFile(wb, filename);
+
+    hideLoading();
+    showToast('Saved: ' + filename);
+
+    // 사진 개별 다운로드 안내
+    if (same.some(p => p.has_photo)) {
+      setTimeout(() => showToast('Tip: Download photos separately from app'), 2000);
+    }
+  } catch(e) {
+    hideLoading();
+    showToast('Export failed: ' + e.message);
+    console.error(e);
+  }
+}
+
+// 사진 개별 다운로드
+async function downloadPhotos() {
+  const same = punches.filter(p => p.punch_type === currentType && p.has_photo);
+  if (!same.length) { showToast('No photos to download'); return; }
+  showLoading('Downloading photos...');
+  for (const p of same) {
+    try {
+      const blob = await dbGet(STORE_PHOTO, p.uid);
+      if (!blob) continue;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Photo_No${p.punch_no}_${p.equipment_no||'unknown'}.jpg`;
+      a.click();
+      URL.revokeObjectURL(url);
+      await new Promise(r => setTimeout(r, 300)); // 다운로드 간격
+    } catch(e) {}
+  }
+  hideLoading();
+  showToast(`${same.length} photos downloaded`);
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  로딩 + 토스트
+// ═══════════════════════════════════════════════════════════════
+function showLoading(msg) {
+  document.getElementById('loading-msg').textContent = msg || 'Processing...';
+  document.getElementById('loading').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loading').classList.remove('show');
+}
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  초기화
+// ═══════════════════════════════════════════════════════════════
+(async () => {
+  showLoading('Initializing...');
+  try {
+    await initDB();
+    punches = await dbGetAll(STORE_META);
+    hideLoading();
+    renderList();
+    updateStorageInfo();
+    document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  } catch(e) {
+    hideLoading();
+    showToast('DB init failed: ' + e.message);
+  }
+})();
+</script>
+</body>
+</html>
